@@ -1,0 +1,64 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.patches import Ellipse
+
+# Set the parameters
+r = 1
+theta_deg = 0.5
+mean_x = r * np.cos(np.deg2rad(theta_deg))
+mean_y = r * np.sin(np.deg2rad(theta_deg))
+
+# Define different values for cov_x
+cov_x_values = [np.array([[0.01, 0], [0, 0.005]]),
+                np.array([[0.02, 0], [0, 0.1]]),
+                np.array([[0.03, 0], [0, 0.5]]),
+                np.array([[0.04, 0], [0, 1]])]
+
+# Create a figure and subplots
+fig, axes = plt.subplots(2, 2, figsize=(10, 8))
+
+# Iterate over each subplot and corresponding cov_x value
+for i, (ax, cov_x) in enumerate(zip(axes.flatten(), cov_x_values)):
+    # Generate samples from the distribution
+    n_samples = 1000
+    samples = np.random.multivariate_normal([mean_x, mean_y], cov_x, size=n_samples)
+
+    # Transform the samples
+    transformed_samples = np.column_stack([
+        samples[:, 0] * np.cos(samples[:, 1] - r * samples[:, 1] * np.sin(samples[:, 1])),
+        samples[:, 0] * np.sin(samples[:, 1]) + r * samples[:, 1] * np.cos(samples[:, 1])
+    ])
+
+    # Calculate the covariance matrix for transformed samples
+    theta_rad = np.deg2rad(theta_deg)
+    cov_y = np.zeros((2, 2))
+    cov_y[0, 0] = ((cov_x[0, 0]) * np.cos(theta_rad) ** 2) + ((cov_x[1, 1]) * (r ** 2) * (np.sin(theta_rad) ** 2))
+    cov_y[0, 1] = (cov_x[0, 0]) * np.sin(theta_rad) * np.cos(theta_rad) - (
+                cov_x[1, 1]) * (r ** 2) * np.sin(theta_rad) * np.cos(theta_rad)
+    cov_y[1, 0] = cov_y[0, 1]
+    cov_y[1, 1] = ((cov_x[0, 0]) * np.sin(theta_rad) ** 2) + ((cov_x[1, 1]) * (r ** 2) * (np.cos(theta_rad) ** 2))
+
+    # Calculate eigenvalues and eigenvectors of the covariance matrix
+    eigenvalues, eigenvectors = np.linalg.eig(cov_y)
+    angle_rad = np.arctan2(eigenvectors[0, 1], eigenvectors[0, 0])
+
+    # Set the confidence level and ellipse parameters
+    confidence_level = 0.95
+    chi_square_value = np.sqrt(5.991)
+    width = 2 * np.sqrt(eigenvalues[0]) * chi_square_value
+    height = 2 * np.sqrt(eigenvalues[1]) * chi_square_value
+
+    # Plot the samples and add the ellipse to the plot
+    ax.scatter(transformed_samples[:, 0], transformed_samples[:, 1], marker='.', color='blue')
+    ax.set_title(f'Transformed Points and Ellipse for Value {i+6}')
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.grid(True)
+    ellipse = Ellipse((mean_x, mean_y), width, height, color='blue', angle=angle_rad, alpha=0.2)
+    ax.add_patch(ellipse)
+
+# Adjust the spacing between subplots
+plt.tight_layout()
+
+# Display the figure
+plt.show()
