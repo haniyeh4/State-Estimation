@@ -17,8 +17,8 @@ def find_inliers(source_points, destination_points, threshold):
         for i in indices:
             x, y = source_points[i]
             x_p, y_p = destination_points[i]
-            A.append([-x, -y, -1, 0, 0, 0, x * x_p, y * x_p, x_p])
-            A.append([0, 0, 0, -x, -y, -1, x * y_p, y * y_p, y_p])
+            A.append([x, y, 1, 0, 0, 0, -x * x_p, -y * x_p, -x_p])
+            A.append([0, 0, 0, x, y, 1, -x * y_p, -y * y_p, -y_p])
         A = np.array(A)
         
         _, _, V = np.linalg.svd(A)
@@ -51,8 +51,8 @@ def compute_homography(source_points, destination_points, inliers):
     for i, inlier in enumerate(inliers):
         x, y = source_points[inlier]
         x_p, y_p = destination_points[inlier]
-        A[2 * i] = [-x, -y, -1, 0, 0, 0, x * x_p, y * x_p, x_p]
-        A[2 * i + 1] = [0, 0, 0, -x, -y, -1, x * y_p, y * y_p, y_p]
+        A[2 * i] = [x, y, 1, 0, 0, 0, -x * -x_p, -y * x_p, -x_p]
+        A[2 * i + 1] = [0, 0, 0, x, y, 1, -x * y_p, -y * y_p, -y_p]
     
     _, _, V = np.linalg.svd(A)
     homography_matrix = V[-1, :].reshape(3, 3)
