@@ -9,10 +9,10 @@ def find_inliers(source_points, destination_points, threshold):
     num_points = source_points.shape[0]
     best_inliers = []
     
-    for _ in range(1000):  # Repeat for a sufficient number of iterations
-        indices = random.sample(range(num_points), 4)  # Randomly select 4 points
+    for _ in range(1000):  
+        indices = random.sample(range(num_points), 4) 
         
-        # Compute homography using the selected points
+        # Compute homography
         A = []
         for i in indices:
             x, y = source_points[i]
@@ -35,7 +35,7 @@ def find_inliers(source_points, destination_points, threshold):
             error = np.sqrt((p_projected[0, 0] - x_p) ** 2 + (p_projected[1, 0] - y_p) ** 2)
             errors.append(error)
         
-        # Check if the error is below the threshold and update the best set of inliers
+        # Check if the error is below the threshold
         inliers = [i for i, error in enumerate(errors) if error < threshold]
         if len(inliers) > len(best_inliers):
             best_inliers = inliers
