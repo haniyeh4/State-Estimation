@@ -60,6 +60,8 @@ def compute_homography(source_points, destination_points, inliers):
     return homography_matrix
 
 homography = compute_homography(source_points, destination_points, inliers)
+print("Normalized homography transformation matrix =:")
+print(homography / homography[2, 2])
 
 
 def plot_scatter(source_points, destination_points, inliers):
